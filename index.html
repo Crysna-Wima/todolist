@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📋 To-Do List Modern</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+    .app-container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      text-align: center;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .input-group input, .input-group select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .input-group button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    .input-group button:hover { background: #45a049; }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      flex: 1;
+    }
+    ul { list-style: none; padding: 0; }
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 10px;
+      margin-bottom: 8px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    li:hover { background: #f1f1f1; }
+    li.completed label { text-decoration: line-through; color: gray; }
+    label { flex: 1; margin-left: 10px; cursor: pointer; }
+    input[type="checkbox"] { transform: scale(1.2); }
+    .executor {
+      font-size: 12px;
+      color: #777;
+      margin-left: 10px;
+    }
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #e74c3c;
+      font-size: 18px;
+      margin-left: 10px;
+      transition: color 0.2s;
+    }
+    .delete-btn:hover { color: #c0392b; }
+    .footer {
+      margin-top: 15px;
+      text-align: center;
+      display: flex;
+      gap: 10px;
+    }
+    #reset-btn, #report-btn {
+      flex: 1;
+      padding: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #reset-btn { background: #e74c3c; }
+    #reset-btn:hover { background: #c0392b; }
+    #report-btn:hover { background: #2980b9; }
+    #report-area {
+      margin-top: 15px;
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <h1>📋 To-Do List Harian</h1>
+
+    <!-- Tambah Tugas -->
+    <div class="input-group">
+      <input type="text" id="new-task" placeholder="Tambah tugas baru..." />
+      <input type="text" id="executor" placeholder="Eksekutor..." />
+      <button id="add-btn">Tambah</button>
+    </div>
+
+    <!-- Filter & Pencarian -->
+    <div class="filter-bar">
+      <input type="text" id="search" placeholder="Cari tugas..." />
+      <select id="status-filter">
+        <option value="all">Semua</option>
+        <option value="completed">Selesai</option>
+        <option value="pending">Belum Selesai</option>
+      </select>
+    </div>
+
+    <!-- Daftar Tugas -->
+    <ul id="todo-list"></ul>
+
+    <!-- Tombol Aksi -->
+    <div class="footer">
+      <button id="reset-btn">🔄 Reset Semua</button>
+      <button id="report-btn">📄 Generate Report</button>
+    </div>
+
+    <!-- Hasil Report -->
+    <textarea id="report-area" readonly></textarea>
+  </div>
+
+  <script>
+    let tasks = [
+      { id: 1, text: "Download bukti jamaah tidak langsung download, tapi buka tab baru", done: false, executor: "" },
+      { id: 2, text: "Jumlah bayar jamaah diberi koma di admin booking", done: false, executor: "" },
+      { id: 3, text: "Di sistem jamaah, di menu perlengkapan & persyaratan ada buktinya", done: false, executor: "" },
+      { id: 4, text: "Order by nama di jamaah admin", done: false, executor: "" },
+      { id: 5, text: "BUG update album bermasalah", done: false, executor: "" },
+      { id: 6, text: "BUG warna modal popup kurang tepat pada aplikasi Jamaah", done: false, executor: "" },
+      { id: 7, text: "Edit room tidak bisa di scroll", done: false, executor: "" },
+      { id: 8, text: "BUG ukuran button pada master include/exclude", done: false, executor: "" },
+      { id: 9, text: "Text di header master include/exclude diubah jadi deskripsi saja", done: false, executor: "" },
+      { id: 10, text: "Button tambah di SOP kanan, judul kiri button kanan", done: false, executor: "" },
+      { id: 11, text: "Validasi link website diubah", done: false, executor: "" },
+      { id: 12, text: "Suhu di sistem tour", done: false, executor: "" },
+      { id: 13, text: "Lokasi di semua sistem", done: false, executor: "" },
+      { id: 14, text: "Preview gallery disesuaikan UI-nya", done: false, executor: "" }
+    ];
+
+    const listEl = document.getElementById("todo-list");
+    const inputEl = document.getElementById("new-task");
+    const executorEl = document.getElementById("executor");
+    const addBtn = document.getElementById("add-btn");
+    const searchEl = document.getElementById("search");
+    const filterEl = document.getElementById("status-filter");
+    const reportBtn = document.getElementById("report-btn");
+    const reportArea = document.getElementById("report-area");
+
+    if (localStorage.getItem("todoData")) {
+      tasks = JSON.parse(localStorage.getItem("todoData"));
+    }
+
+    function renderList() {
+      listEl.innerHTML = "";
+      const searchValue = searchEl.value.toLowerCase();
+      const filterValue = filterEl.value;
+
+      tasks
+        .filter(task => task.text.toLowerCase().includes(searchValue))
+        .filter(task => {
+          if (filterValue === "completed") return task.done;
+          if (filterValue === "pending") return !task.done;
+          return true;
+        })
+        .forEach(task => {
+          const li = document.createElement("li");
+          if (task.done) li.classList.add("completed");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = task.done;
+          checkbox.addEventListener("change", () => toggleTask(task.id));
+
+          const label = document.createElement("label");
+          label.textContent = task.text;
+
+          const exec = document.createElement("span");
+          exec.className = "executor";
+          exec.textContent = task.executor ? `👤 ${task.executor}` : "";
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "delete-btn";
+          delBtn.innerHTML = "🗑️";
+          delBtn.addEventListener("click", () => deleteTask(task.id));
+
+          li.appendChild(checkbox);
+          li.appendChild(label);
+          li.appendChild(exec);
+          li.appendChild(delBtn);
+          listEl.appendChild(li);
+        });
+
+      saveTasks();
+    }
+
+    function addTask() {
+      const text = inputEl.value.trim();
+      const exec = executorEl.value.trim();
+      if (text === "") return;
+      tasks.push({ id: Date.now(), text, done: false, executor: exec });
+      inputEl.value = "";
+      executorEl.value = "";
+      renderList();
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      task.done = !task.done;
+      renderList();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      renderList();
+    }
+
+    function saveTasks() {
+      localStorage.setItem("todoData", JSON.stringify(tasks));
+    }
+
+    function generateReport() {
+      let text = "📋 *Laporan Tugas Hari Ini*\n\n";
+      tasks.forEach((t, i) => {
+        const status = t.done ? "✅ Selesai" : "❌ Belum";
+        const exec = t.executor ? ` | 👤 ${t.executor}` : "";
+        text += `${i + 1}. ${t.text} - ${status}${exec}\n`;
+      });
+      reportArea.value = text;
+      reportArea.style.display = "block";
+      reportArea.select();
+      navigator.clipboard.writeText(text);
+    }
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      tasks.forEach(t => (t.done = false));
+      renderList();
+    });
+
+    addBtn.addEventListener("click", addTask);
+    inputEl.addEventListener("keypress", e => { if (e.key === "Enter") addTask(); });
+    executorEl.addEventListener("keypress", e => { if (e.key === "Enter") addTask(); });
+    searchEl.addEventListener("input", renderList);
+    filterEl.addEventListener("change", renderList);
+    reportBtn.addEventListener("click", generateReport);
+
+    renderList();
+  </script>
+</body>
+</html>
